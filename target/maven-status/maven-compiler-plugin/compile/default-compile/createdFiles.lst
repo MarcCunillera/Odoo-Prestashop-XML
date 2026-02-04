@@ -1,0 +1,17 @@
+com/mycompany/prestashop/odoo/Prestashop/config/PrestashopConfig.class
+com/mycompany/prestashop/odoo/Odoo/client/OdooProductTemplates.class
+com/mycompany/prestashop/odoo/Prestashop/xml/StockXmlMapper.class
+com/mycompany/prestashop/odoo/Odoo/client/OdooStockQuant.class
+com/mycompany/prestashop/odoo/Prestashop/client/PrestashopXmlClient.class
+com/mycompany/prestashop/odoo/Odoo/model/CategoryMappingService.class
+com/mycompany/prestashop/odoo/Prestashop/model/ProductDTO.class
+com/mycompany/prestashop/odoo/Prestashop/service/OdooStockService.class
+com/mycompany/prestashop/odoo/Prestashop/service/OdooStockService$ProductInfo.class
+com/mycompany/prestashop/odoo/Odoo/model/OdooToPrestashopMapper.class
+com/mycompany/prestashop/odoo/Prestashop/client/PrestashopXmlClient$1.class
+com/mycompany/prestashop/odoo/Main.class
+com/mycompany/prestashop/odoo/Prestashop/xml/ProductXmlMapper.class
+com/mycompany/prestashop/odoo/Odoo/config/OdooConfig.class
+com/mycompany/prestashop/odoo/Prestashop/service/ProductXmlSyncService.class
+com/mycompany/prestashop/odoo/Odoo/client/OdooProductProduct.class
+com/mycompany/prestashop/odoo/Odoo/client/OdooProductCategoryMapping.class

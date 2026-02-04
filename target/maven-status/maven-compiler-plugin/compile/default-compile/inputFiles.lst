@@ -1,0 +1,15 @@
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/model/ProductDTO.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/model/CategoryMappingService.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/client/OdooProductProduct.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/service/ProductXmlSyncService.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Main.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/model/OdooToPrestashopMapper.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/xml/StockXmlMapper.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/client/OdooStockQuant.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/xml/ProductXmlMapper.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/client/PrestashopXmlClient.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/config/OdooConfig.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/service/OdooStockService.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/config/PrestashopConfig.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/client/OdooProductCategoryMapping.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/client/OdooProductTemplates.java
