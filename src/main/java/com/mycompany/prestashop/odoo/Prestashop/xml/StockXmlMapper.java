@@ -1,15 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.prestashop.odoo.Prestashop.xml;
 
 /**
- *
  * @author marccunillera
  */
 public class StockXmlMapper {
 
+    /**
+     * Genera l'estructura XML necessària per actualitzar l'estoc disponible
+     * d'un producte a PrestaShop, vinculant l'identificador de l'inventari, el
+     * producte i la quantitat física final.
+     */
     public static String mapStock(int stockId, int productId, int quantity) {
         return String.format("""
         <?xml version="1.0" encoding="UTF-8"?>

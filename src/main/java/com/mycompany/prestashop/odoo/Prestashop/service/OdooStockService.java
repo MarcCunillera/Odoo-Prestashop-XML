@@ -10,11 +10,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Servicio de cálculo de stock desde Odoo
+ * Servei per al càlcul de l'estoc des d'Odoo.
  */
 public class OdooStockService {
 
-    // MÉTODO PRINCIPAL
+    /**
+     * Obté l'estoc total d'un producte a Odoo mitjançant la seva referència i
+     * l'ID de la plantilla, coordinant la recuperació de dades i el sumatori de
+     * quantitats.
+     */
     public static int getStockByReference(int templateId, String templateRef) throws Exception {
 
         JSONArray allProducts = OdooProductProduct.getProductProduct();
@@ -29,7 +33,10 @@ public class OdooStockService {
         return (int) Math.round(totalStock);
     }
 
-    // MAPA DE PRODUCTOS
+    /**
+     * Construeix un mapa de productes filtrant les variants que coincideixen
+     * amb la plantilla i la referència normalitzada facilitades.
+     */
     private static Map<Integer, ProductInfo> buildProductMap(JSONArray products, int templateId, String ref) {
 
         Map<Integer, ProductInfo> map = new HashMap<>();
@@ -51,7 +58,11 @@ public class OdooStockService {
         return map;
     }
 
-    // CÁLCULO DE STOCK
+    /**
+     * Calcula la quantitat total acumulada d'estoc recorrent els registres de
+     * quantitats (quants) d'Odoo per a aquells productes que es troben al mapa
+     * de variants.
+     */
     private static double calculateStock(JSONArray quants, Map<Integer, ProductInfo> productMap) {
 
         double total = 0.0;
@@ -69,19 +80,16 @@ public class OdooStockService {
             double qty = quant.optDouble("quantity", 0.0);
 
             if (qty > 0) {
-
-                ProductInfo info = productMap.get(productId);
-
                 total += qty;
-
-                System.out.println("Stock real encontrado: " + qty + " (Ref: " + info.reference + ")");
             }
         }
-
         return total;
     }
 
-    // HELPERS
+    /**
+     * Normalitza cadenes de text eliminant espais en blanc innecessaris i
+     * gestionant valors nuls.
+     */
     private static String normalize(String value) {
 
         if (value == null) {
@@ -91,6 +99,10 @@ public class OdooStockService {
         return value.trim();
     }
 
+    /**
+     * Extrau l'identificador numèric d'un objecte d'Odoo, suportant diferents
+     * formats com valors simples o estructures de matriu.
+     */
     private static int extractId(Object obj) {
 
         if (obj instanceof JSONArray) {
@@ -108,7 +120,6 @@ public class OdooStockService {
         return -1;
     }
 
-    // CLASE INTERNA
     private static class ProductInfo {
 
         final int id;
@@ -119,5 +130,4 @@ public class OdooStockService {
             this.reference = reference;
         }
     }
-
 }

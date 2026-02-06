@@ -5,6 +5,7 @@
 /home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Main.java
 /home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/model/OdooToPrestashopMapper.java
 /home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/xml/StockXmlMapper.java
+/home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/service/ImageSyncService.java
 /home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Odoo/client/OdooStockQuant.java
 /home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/xml/ProductXmlMapper.java
 /home/marccunillera/Documentos/prestashop-odoo-xml/src/main/java/com/mycompany/prestashop/odoo/Prestashop/client/PrestashopXmlClient.java

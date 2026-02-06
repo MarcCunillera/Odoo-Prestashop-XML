@@ -8,16 +8,16 @@ import com.mycompany.prestashop.odoo.Prestashop.xml.StockXmlMapper;
 public class ProductXmlSyncService {
 
     /**
-     * Método principal de sincronización
+     * Coordina el flux principal de sincronització d'un producte, gestionant la
+     * cerca prèvia a PrestaShop i decidint si cal crear un registre nou o
+     * actualitzar un existent.
      */
     public void syncProduct(ProductDTO product) throws Exception {
-
         String reference = normalize(product.getReference());
         String productName = normalize(product.getNames());
 
         printHeader(productName, reference);
 
-        // Buscar si el producto ya existe en PrestaShop
         Integer existingId = findExistingProduct(reference);
 
         if (existingId != null) {
@@ -30,148 +30,126 @@ public class ProductXmlSyncService {
     }
 
     /**
-     * Buscar producto existente por referencia
+     * Gestiona la sincronització de fitxers multimèdia mitjançant el servei
+     * d'imatges, informant de l'estat del procés per consola.
+     */
+    private void syncImages(int productId, ProductDTO product) {
+        try {
+            ImageSyncService.syncProductImage(productId, product);
+            System.out.println("   - Imagenes:        [ OK ] Multimedia vinculada");
+        } catch (Exception e) {
+            System.out.println("   - Imagenes:        [ SALTADO ] Sin imagen o error");
+        }
+    }
+
+    /**
+     * Cerca si un producte ja està donat d'alta a PrestaShop utilitzant la seva
+     * referència única i retorna el seu identificador en cas afirmatiu.
      */
     private Integer findExistingProduct(String reference) {
         try {
-            System.out.println("Buscando producto con referencia: " + reference);
-
+            System.out.printf(" > %-35s", "Busqueda en PrestaShop...");
             if (reference == null || reference.isEmpty()) {
-                System.out.println("Referencia vacía, se creará nuevo producto");
+                System.out.println("[ VACIO ]");
                 return null;
             }
 
             Integer productId = PrestashopXmlClient.findProductByReference(reference);
-
             if (productId != null) {
-                System.out.println("Producto encontrado con ID: " + productId);
+                System.out.println("[ EXISTE ] ID: " + productId);
             } else {
-                System.out.println("Producto no encontrado, se creará uno nuevo");
+                System.out.println("[ NUEVO ]");
             }
-
             return productId;
-
         } catch (Exception e) {
-            System.out.println("Error al buscar producto: " + e.getMessage());
+            System.out.println("[ ERROR ] " + e.getMessage());
             return null;
         }
     }
 
     /**
-     * Actualizar producto existente
+     * Executa l'actualització de les dades base, la jerarquia de categories,
+     * l'estoc i les imatges d'un producte que ja existeix a la plataforma.
      */
     private void updateExistingProduct(int productId, ProductDTO product) throws Exception {
-        System.out.println("\n═══ ACTUALIZANDO PRODUCTO ID: " + productId + " ═══");
+        System.out.println(" > Accion: ACTUALIZAR");
 
-        // 1. Obtener el esquema del producto existente
-        String existingXml = PrestashopXmlClient.getXml("/products/" + productId);
-
-        // 2. Actualizar los campos necesarios en el XML
-        String updatedXml = updateProductXml(existingXml, product, productId);
-
-        System.out.println("\n--- XML a enviar ---");
-        System.out.println(updatedXml);
-        System.out.println("--- Fin XML ---\n");
-
-        // 3. Enviar actualización
+        String updatedXml = updateProductXml(product, productId);
         PrestashopXmlClient.putXml("/products/" + productId, updatedXml);
-        System.out.println("Producto actualizado");
+        System.out.println("   - Datos base:      [ ACTUALIZADOS ]");
 
-        // 4. Actualizar stock
+        printCategories(product);
         updateStock(productId, product.getQuantity());
-
-        System.out.println("Sincronización completada para ID: " + productId);
+        syncImages(productId, product);
     }
 
     /**
-     * Crear nuevo producto
+     * Registra un nou producte a PrestaShop a partir d'un XML generat, extreu
+     * l'ID assignat i procedeix a sincronitzar el seu estoc i les seves
+     * imatges.
      */
     private void createNewProduct(ProductDTO product) throws Exception {
-        System.out.println("\n═══ CREANDO NUEVO PRODUCTO ═══");
+        System.out.println(" > Accion: CREAR");
 
-        // 1. Generar XML del producto
         String productXml = ProductXmlMapper.mapProductToXml(product);
-
-        System.out.println("\n--- XML a enviar ---");
-        System.out.println(productXml);
-        System.out.println("--- Fin XML ---\n");
-
-        // 2. Crear el producto
         String responseXml = PrestashopXmlClient.postXml("/products", productXml);
-        System.out.println("Producto creado");
 
-        // 3. Extraer el ID del producto creado (con manejo de CDATA)
-        Integer newProductId = extractProductIdFromResponse(responseXml);
+        Integer newId = extractProductIdFromResponse(responseXml);
+        System.out.println("   - Registro:        [ GENERADO ] ID: " + newId);
 
-        if (newProductId == null) {
-            System.out.println("Respuesta XML recibida:");
-            System.out.println(responseXml);
-            throw new RuntimeException("No se pudo obtener el ID del producto creado");
-        }
-
-        System.out.println("ID del nuevo producto: " + newProductId);
-
-        // 4. Actualizar stock
-        updateStock(newProductId, product.getQuantity());
-
-        System.out.println("Producto creado exitosamente con ID: " + newProductId);
+        printCategories(product);
+        updateStock(newId, product.getQuantity());
+        syncImages(newId, product);
     }
 
     /**
-     * Actualizar el stock de un producto
+     * Actualitza la quantitat disponible d'un producte a PrestaShop, gestionant
+     * el retard necessari perquè el recurs stock_available estigui a punt en
+     * cas de creació recent.
      */
     private void updateStock(int productId, int quantity) throws Exception {
-        System.out.println("\n--- Actualizando stock ---");
-        System.out.println("Producto ID: " + productId + " | Cantidad: " + quantity);
-
-        // 1. Obtener el ID del registro stock_available
         Integer stockId = PrestashopXmlClient.getStockAvailableId(productId);
 
         if (stockId == null) {
-            System.out.println("No se encontró registro de stock, intentando de nuevo en 2 segundos...");
-
-            // Esperar y reintentar
-            Thread.sleep(2000);
+            Thread.sleep(1500);
             stockId = PrestashopXmlClient.getStockAvailableId(productId);
-
-            if (stockId == null) {
-                System.out.println("Aún no se encontró registro de stock, saltando actualización");
-                return;
-            }
         }
 
-        System.out.println("Stock ID encontrado: " + stockId);
-
-        // 2. Generar XML de stock
-        String stockXml = StockXmlMapper.mapStock(stockId, productId, quantity);
-
-        System.out.println("\n--- XML Stock a enviar ---");
-        System.out.println(stockXml);
-        System.out.println("--- Fin XML Stock ---\n");
-
-        // 3. Actualizar stock
-        PrestashopXmlClient.putXml("/stock_availables/" + stockId, stockXml);
-        System.out.println("✓ Stock actualizado a: " + quantity);
+        if (stockId != null) {
+            String stockXml = StockXmlMapper.mapStock(stockId, productId, quantity);
+            PrestashopXmlClient.putXml("/stock_availables/" + stockId, stockXml);
+            System.out.printf("   - Inventario:      [ OK ] Cantidad: %d\n", quantity);
+        } else {
+            System.out.println("   - Inventario:      [ ERROR ] ID de stock no encontrado");
+        }
     }
 
     /**
-     * Actualizar XML existente con nuevos datos
+     * Genera l'estructura XML necessària per a l'actualització del producte,
+     * incloent la informació de preus, taxonomies i el mapeig complet de
+     * categories.
      */
-    private String updateProductXml(String existingXml, ProductDTO product, int productId) {
-        // Extraer valores necesarios
-        String reference = (product.getReference() != null) ? product.getReference().trim() : "";
+    private String updateProductXml(ProductDTO product, int productId) {
+        String reference = normalize(product.getReference());
         String name = product.getNames();
         double price = (product.getPriceTaxExcluded() != null) ? product.getPriceTaxExcluded() : 0.0;
         double wholesalePrice = (product.getWholesalePrice() != null) ? product.getWholesalePrice() : 0.0;
-        int categoryId = product.getCategoryId();
+        int categoryIdDefault = product.getCategoryId();
 
-        String slug = name.toLowerCase()
-                .trim()
+        String slug = name.toLowerCase().trim()
                 .replaceAll("[^a-z0-9]", "-")
                 .replaceAll("-+", "-")
                 .replaceAll("^-|-$", "");
 
-        // Construir XML con campos de visibilidad para que no desaparezca del catálogo
+        StringBuilder categoriesXml = new StringBuilder();
+        if (product.getCategoryIds() != null && !product.getCategoryIds().isEmpty()) {
+            for (Integer catId : product.getCategoryIds()) {
+                categoriesXml.append("        <category><id>").append(catId).append("</id></category>\n");
+            }
+        } else {
+            categoriesXml.append("        <category><id>").append(categoryIdDefault).append("</id></category>\n");
+        }
+
         return String.format(java.util.Locale.US, """
     <?xml version="1.0" encoding="UTF-8"?>
     <prestashop xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -190,92 +168,93 @@ public class ProductXmlSyncService {
         <show_price>1</show_price>
         <visibility><![CDATA[both]]></visibility>
         <indexed>1</indexed>
-        <name>
-          <language id="1"><![CDATA[%s]]></language>
-        </name>
-        <link_rewrite>
-          <language id="1"><![CDATA[%s]]></language>
-        </link_rewrite>
+        <name><language id="1"><![CDATA[%s]]></language></name>
+        <link_rewrite><language id="1"><![CDATA[%s]]></language></link_rewrite>
         <associations>
           <categories>
-            <category>
-              <id>%d</id>
-            </category>
+    %s
           </categories>
         </associations>
       </product>
     </prestashop>
     """,
-                productId,
-                categoryId,
-                escapeXml(reference),
-                price,
-                wholesalePrice,
-                escapeXml(name),
-                slug,
-                categoryId
+                productId, categoryIdDefault, escapeXml(reference), price, wholesalePrice,
+                escapeXml(name), slug, categoriesXml.toString()
         );
     }
 
+    /**
+     * Utilitza expressions regulars per extreure l'identificador d'un recurs a
+     * partir d'una cadena de text amb format XML.
+     */
     private Integer extractProductIdFromResponse(String xml) {
         try {
-            // Método 1: Buscar patrón simple <id>NUMBER</id>
-            int idStart = xml.indexOf("<id>") + 4;
-            int idEnd = xml.indexOf("</id>");
-
-            if (idStart > 3 && idEnd > idStart) {
-                String idContent = xml.substring(idStart, idEnd).trim();
-
-                // Limpiar CDATA si existe
-                idContent = idContent.replace("<![CDATA[", "").replace("]]>", "").trim();
-
-                // Intentar parsear
-                try {
-                    return Integer.parseInt(idContent);
-                } catch (NumberFormatException e) {
-                    System.out.println("Error al parsear ID: " + idContent);
-                }
-            }
-
-            // Método 2: Buscar en el XML completo usando regex más robusto
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(
-                    "<id>(?:<!\\[CDATA\\[)?(\\d+)(?:\\]\\]>)?</id>"
-            );
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("<id>(?:<!\\[CDATA\\[)?(\\d+)(?:\\]\\]>)?</id>");
             java.util.regex.Matcher matcher = pattern.matcher(xml);
-
             if (matcher.find()) {
                 return Integer.parseInt(matcher.group(1));
             }
-
         } catch (Exception e) {
             System.out.println("Error al extraer ID: " + e.getMessage());
         }
         return null;
     }
 
-    // === MÉTODOS AUXILIARES ===
+    /**
+     * Neteja i normalitza les cadenes de text d'entrada per evitar errors en el
+     * processament posterior.
+     */
     private String normalize(String value) {
         return (value == null) ? "" : value.trim();
     }
 
+    /**
+     * Substitueix caràcters especials pels seus equivalents en format d'entitat
+     * XML per garantir la validesa del document generat.
+     */
     private String escapeXml(String text) {
         if (text == null) {
             return "";
         }
-        return text.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;")
-                .replace("'", "&apos;");
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&apos;");
     }
 
+    /**
+     * Mostra per pantalla el camí complet de categories que s'ha assignat al
+     * producte durant la sincronització.
+     */
+    private void printCategories(ProductDTO product) {
+        if (product.getCategoryIds() != null && !product.getCategoryIds().isEmpty()) {
+            String path = product.getCategoryIds().stream()
+                    .map(String::valueOf)
+                    .reduce((a, b) -> a + " / " + b)
+                    .orElse("");
+            System.out.printf("   - Categorias:      [ %s ]\n", path);
+        } else {
+            System.out.println("   - Categorias:      [ DEFAULT ] ID: " + product.getCategoryId());
+        }
+    }
+
+    /**
+     * Imprimeix la capçalera visual informativa al log de la consola abans de
+     * començar la gestió del producte.
+     */
     private void printHeader(String name, String ref) {
         System.out.println("\n" + "=".repeat(60));
-        System.out.println("SINCRONIZACIÓN: " + name + " [Ref: " + ref + "]");
-        System.out.println("=".repeat(60));
+        System.out.println(" INICIO DE PROCESO DE SINCRONIZACION");
+        System.out.println(" - PRODUCTO: " + name);
+        System.out.println(" - REF:      " + ref);
+        System.out.println("-".repeat(60));
     }
 
+    /**
+     * Imprimeix el peu de pàgina visual per tancar el bloc d'informació de la
+     * sincronització actual.
+     */
     private void printFooter() {
+        System.out.println("-".repeat(60));
+        System.out.println(" PROCESO FINALIZADO");
         System.out.println("=".repeat(60) + "\n");
     }
 }

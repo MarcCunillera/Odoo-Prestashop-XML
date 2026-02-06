@@ -1,11 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.prestashop.odoo.Prestashop.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author marccunillera
  */
 public class ProductDTO {
@@ -18,6 +16,11 @@ public class ProductDTO {
     private boolean enabled;
     private String reference;
     private int quantity;
+    private String image1920;
+
+    private List<Integer> categoryIds = new ArrayList<>();
+
+    private List<String> additionalImages = new ArrayList<>();
 
     public int getProductId() {
         return productId;
@@ -37,6 +40,14 @@ public class ProductDTO {
 
     public Double getPriceTaxExcluded() {
         return priceTaxExcluded;
+    }
+
+    public String getImage1920() {
+        return image1920;
+    }
+
+    public void setImage1920(String image1920) {
+        this.image1920 = image1920;
     }
 
     public void setPriceTaxExcluded(Double priceTaxExcluded) {
@@ -81,5 +92,21 @@ public class ProductDTO {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public List<String> getAdditionalImages() {
+        return additionalImages;
+    }
+
+    public void setAdditionalImages(List<String> additionalImages) {
+        this.additionalImages = additionalImages;
+    }
+
+    public List<Integer> getCategoryIds() {
+        return categoryIds;
+    }
+
+    public void setCategoryIds(List<Integer> categoryIds) {
+        this.categoryIds = categoryIds;
     }
 }

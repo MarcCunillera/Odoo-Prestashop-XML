@@ -9,11 +9,17 @@ public class OdooProductCategoryMapping {
 
     private static final HttpClient client = HttpClient.newHttpClient();
 
+    /**
+     * Recupera el mapeig de categories entre Odoo i PrestaShop enviant una
+     * petició JSON-RPC per obtenir els identificadors i les relacions de
+     * parentiu.
+     */
     public static JSONArray getProductCategoryMapping() throws Exception {
 
         JSONArray fields = new JSONArray();
         fields.put("id_categ_odoo");
         fields.put("id_categ_presta");
+        fields.put("parent_categ_odoo");
 
         JSONObject kwargs = new JSONObject();
         kwargs.put("fields", fields);

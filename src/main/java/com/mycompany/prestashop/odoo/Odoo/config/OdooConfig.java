@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.prestashop.odoo.Odoo.config;
 
 import java.io.FileInputStream;
@@ -29,6 +25,10 @@ public class OdooConfig {
         loadConfig();
     }
 
+    /**
+     * Carrega les credencials i la URL de connexió des d'un fitxer de
+     * propietats extern i emmagatzema l'última data de modificació del fitxer.
+     */
     private static void loadConfig() {
         Properties props = new Properties();
 
@@ -58,9 +58,8 @@ public class OdooConfig {
     public static String getODOO_USER_ID() {
         return ODOO_USER_ID;
     }
-    
+
     public static String getODOO_PASSWORD() {
         return ODOO_PASSWORD;
     }
 }
-

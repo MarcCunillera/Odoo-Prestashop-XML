@@ -16,9 +16,12 @@ public class OdooProductTemplates {
 
     private static final HttpClient client = HttpClient.newHttpClient();
 
+    /**
+     * Obté la llista de plantilles de productes d'Odoo mitjançant una crida
+     * JSON-RPC, recuperant camps específics com el nom, preu i imatge.
+     */
     public static JSONArray getProductTemplate() throws Exception {
 
-        // Definim els camps que volem obtenir dels productes
         JSONArray fields = new JSONArray();
         fields.put("id");
         fields.put("name");
@@ -26,47 +29,40 @@ public class OdooProductTemplates {
         fields.put("standard_price");
         fields.put("categ_id");
         fields.put("default_code");
+        fields.put("image_1920");
 
-        // Construïm l'objecte kwargs amb els camps que volem
         JSONObject kwargs = new JSONObject();
         kwargs.put("fields", fields);
 
-        // Construïm els arguments per a execute_kw
         JSONArray args = new JSONArray();
         args.put(OdooConfig.getODOO_DB_NAME());
         args.put(Integer.parseInt(OdooConfig.getODOO_USER_ID()));
         args.put(OdooConfig.getODOO_PASSWORD());
         args.put("product.template");
-        args.put("search_read");                          // Mètode per buscar i llegir registres
-        args.put(new JSONArray());                        // Sense filtres: agafa tots els productes
-        args.put(kwargs);                                 // Indica els camps que volem obtenir
+        args.put("search_read");
+        args.put(new JSONArray());
+        args.put(kwargs);
 
-        // Construim els paràmetres del JSON-RPC
         JSONObject params = new JSONObject();
-        params.put("service", "object");       // Treballem sobre un model d'Odoo
+        params.put("service", "object");
         params.put("method", "execute_kw");
         params.put("args", args);
 
-        // Construïm el payload final per enviar a Odoo
         JSONObject payload = new JSONObject();
-        payload.put("jsonrpc", "2.0"); // Versió del protocol JSON-RPC
+        payload.put("jsonrpc", "2.0");
         payload.put("method", "call");
         payload.put("params", params);
 
-        // Creem la petició HTTP cap a l'endpoint JSON-RPC d'Odoo
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(OdooConfig.getODOO_URL() + "/jsonrpc"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
                 .build();
 
-        // Enviem la petició i guardem la resposta
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        // Parsejem la resposta JSON
         JSONObject res = new JSONObject(response.body());
 
-        // Retornem directament l'array amb els productes
         return res.getJSONArray("result");
     }
 }

@@ -7,6 +7,7 @@ com/mycompany/prestashop/odoo/Odoo/model/CategoryMappingService.class
 com/mycompany/prestashop/odoo/Prestashop/model/ProductDTO.class
 com/mycompany/prestashop/odoo/Prestashop/service/OdooStockService.class
 com/mycompany/prestashop/odoo/Prestashop/service/OdooStockService$ProductInfo.class
+com/mycompany/prestashop/odoo/Prestashop/service/ImageSyncService.class
 com/mycompany/prestashop/odoo/Odoo/model/OdooToPrestashopMapper.class
 com/mycompany/prestashop/odoo/Prestashop/client/PrestashopXmlClient$1.class
 com/mycompany/prestashop/odoo/Main.class
